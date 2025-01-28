@@ -41,12 +41,13 @@ public class JwtTokenizer {
         return createToken(id, email, roles, REFRESH_TOKEN_EXPIRE_COUNT, refreshSecret);
     }
 
-    private String createToken(Long id, String email, List<String> roles,
-                               Long expire, byte[] secretKey) {
-        Claims claims = Jwts.claims().setSubject(email);
+    private String createToken(Long id, String email, List<String> roles, Long expire, byte[] secretKey) {
 
-        claims.put("roles", roles);
-        claims.put("memberId", id);
+        Claims claims = Jwts.claims()
+                .subject(email)
+                .add("roles", roles)
+                .add("memberId", id)
+                .build();
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -56,14 +57,26 @@ public class JwtTokenizer {
                 .compact();
     }
 
-
+    /**
+     * 토큰에서 사용자 아이디 얻기
+     */
+    public Long getMemberIdFromToken(String token) {
+        String[] tokenArr = token.split(" ");
+        token = tokenArr[1];
+        Claims claims = parseToken(token, accessSecret);
+        return Long.valueOf((Integer) claims.get("memberId"));
+    }
 
     public Claims parseAccessToken(String accessToken) {
         return parseToken(accessToken, accessSecret);
     }
 
+    public Claims parseRefreshToken(String refreshToken) {
+        return parseToken(refreshToken, refreshSecret);
+    }
+
     public Claims parseToken(String token, byte[] secretKey) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(getSigningKey(secretKey))
                 .build()
                 .parseClaimsJws(token)
