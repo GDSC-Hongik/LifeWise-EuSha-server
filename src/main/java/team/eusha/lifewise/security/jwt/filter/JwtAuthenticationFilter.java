@@ -18,12 +18,21 @@ import team.eusha.lifewise.security.jwt.exception.JwtExceptionCode;
 import team.eusha.lifewise.security.jwt.token.JwtAuthenticationToken;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String[] excludePath = {"/members/signup", "/members/login", "/members/refreshToken"};
+        String path = request.getRequestURI();
+        return Arrays.stream(excludePath)
+                .anyMatch(path::equals);
+    }
 
     @Override
     protected void doFilterInternal(
