@@ -21,7 +21,11 @@ public class Role {
     @Column(length = 20)
     private String name;
 
-
-
-
+    @Override
+    public String toString() {
+        return "Role{" +
+                "roleId=" + roleId +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

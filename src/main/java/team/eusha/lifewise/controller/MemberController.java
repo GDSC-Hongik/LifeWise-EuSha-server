@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import team.eusha.lifewise.domain.Member;
+import team.eusha.lifewise.domain.Role;
 import team.eusha.lifewise.dto.request.MemberLoginRequest;
 import team.eusha.lifewise.dto.request.MemberSignupRequest;
 import team.eusha.lifewise.dto.response.MemberLoginResponse;
@@ -16,6 +17,7 @@ import team.eusha.lifewise.security.jwt.util.JwtTokenizer;
 import team.eusha.lifewise.service.MemberService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,28 +50,35 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid MemberLoginRequest login) {
+    public ResponseEntity login(@RequestBody @Valid MemberLoginRequest login, BindingResult bindingResult) {
 
-        Long memberId = 1L;
-        String email = login.getEmail();
-        List<String> roles = List.of("USER");
+       if(bindingResult.hasErrors()) {
+           return new ResponseEntity(HttpStatus.BAD_REQUEST);
+       }
+
+       Member member = memberService.findByEmail(login.getEmail());
+       if(!passwordEncoder.matches(login.getPassword(), member.getPassword())) {
+           return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+       }
+
+       List<String> roles = member.getRoles().stream().map(Role::getName).collect(Collectors.toList());
 
         // JWT 토큰 생성
-        String accessToken = jwtTokenizer.createAccessToken(memberId, email, roles);
-        String refreshToken = jwtTokenizer.createRefreshToken(memberId, email, roles);
+        String accessToken = jwtTokenizer.createAccessToken(member.getMemberId(),member.getEmail(),member.getName(), roles);
+        String refreshToken = jwtTokenizer.createRefreshToken(member.getMemberId(),member.getEmail(),member.getName(), roles);
 
         MemberLoginResponse loginResponse = MemberLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .memberId(memberId)
-                .name("name")
+                .memberId(member.getMemberId())
+                .name(member.getName())
                 .build();
         return new ResponseEntity(loginResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/logout")
     public ResponseEntity logout(@RequestHeader("Authorization") String token) {
-        // token repository에서 refresh Token에 해당하는 값을 삭제
+
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

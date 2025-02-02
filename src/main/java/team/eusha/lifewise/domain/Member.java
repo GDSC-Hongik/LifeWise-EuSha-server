@@ -1,9 +1,11 @@
 package team.eusha.lifewise.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -17,13 +19,23 @@ import java.util.Set;
 public class Member {
 
     @Id
+    @Column(name = "member_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
+
+    @Column(length = 255, unique = true)
     private String name;
+
+    @Column(length = 50)
     private String email;
 
+    @JsonIgnore
+    @Column(length = 500)
     private String password;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
+
     @ManyToMany
     @JoinTable(name = "member_role",
             joinColumns = @JoinColumn(name = "member_id"),
