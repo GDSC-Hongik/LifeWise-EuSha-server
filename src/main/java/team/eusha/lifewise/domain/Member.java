@@ -24,7 +24,7 @@ public class Member {
     private Long memberId;
 
     @Column(length = 255, unique = true)
-    private String name;
+    private String memberName;
 
     @Column(length = 50)
     private String email;
@@ -47,7 +47,7 @@ public class Member {
     public String toString() {
         return "Member{" +
                 "memberId=" + memberId +
-                ", name='" + name + '\'' +
+                ", name='" + memberName + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", createdAt=" + createdAt +

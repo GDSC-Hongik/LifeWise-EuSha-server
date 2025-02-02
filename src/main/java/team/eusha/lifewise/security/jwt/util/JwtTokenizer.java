@@ -31,7 +31,7 @@ public class JwtTokenizer {
      * AccessToken 생성
      */
     public String createAccessToken(Long id, String email, String name, List<String> roles) {
-        return createToken(id, email, name,  roles, ACCESS_TOKEN_EXPIRE_COUNT, accessSecret);
+        return createToken(id, email, name, roles, ACCESS_TOKEN_EXPIRE_COUNT, accessSecret);
     }
 
     /**
@@ -47,7 +47,7 @@ public class JwtTokenizer {
                 .subject(email)
                 .add("roles", roles)
                 .add("memberId", id)
-                .add("name", name)
+                .add("memberName", name)
                 .build();
 
         return Jwts.builder()

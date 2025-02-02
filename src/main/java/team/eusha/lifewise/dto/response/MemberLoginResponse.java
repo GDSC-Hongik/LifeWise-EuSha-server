@@ -14,5 +14,5 @@ public class MemberLoginResponse {
     private String refreshToken;
 
     private Long memberId;
-    private String name;
+    private String memberName;
 }

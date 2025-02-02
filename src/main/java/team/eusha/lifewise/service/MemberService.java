@@ -24,7 +24,7 @@ public class MemberService {
 
     @Transactional
     public Member addMember(Member member) {
-        Optional<Role> userRole = roleRepository.findByName("USER");
+        Optional<Role> userRole = roleRepository.findByName("ROLE_USER");
         member.addRole(userRole.get());
         Member saveMember = memberRepository.save(member);
         return saveMember;

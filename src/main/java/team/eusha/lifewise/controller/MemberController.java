@@ -34,7 +34,7 @@ public class MemberController {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
         Member member = new Member();
-        member.setName(request.getName());
+        member.setMemberName(request.getMemberName());
         member.setEmail(request.getEmail());
         member.setPassword(passwordEncoder.encode(request.getPassword()));
 
@@ -42,7 +42,7 @@ public class MemberController {
 
         MemberSignupResponse response = new MemberSignupResponse();
         response.setMemberId(saveMember.getMemberId());
-        response.setName(saveMember.getName());
+        response.setMemberName(saveMember.getMemberName());
         response.setCreatedAt(saveMember.getCreatedAt());
         response.setEmail(saveMember.getEmail());
 
@@ -64,14 +64,14 @@ public class MemberController {
        List<String> roles = member.getRoles().stream().map(Role::getName).collect(Collectors.toList());
 
         // JWT 토큰 생성
-        String accessToken = jwtTokenizer.createAccessToken(member.getMemberId(),member.getEmail(),member.getName(), roles);
-        String refreshToken = jwtTokenizer.createRefreshToken(member.getMemberId(),member.getEmail(),member.getName(), roles);
+        String accessToken = jwtTokenizer.createAccessToken(member.getMemberId(),member.getEmail(),member.getMemberName(), roles);
+        String refreshToken = jwtTokenizer.createRefreshToken(member.getMemberId(),member.getEmail(),member.getMemberName(), roles);
 
         MemberLoginResponse loginResponse = MemberLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .memberId(member.getMemberId())
-                .name(member.getName())
+                .memberName(member.getMemberName())
                 .build();
         return new ResponseEntity(loginResponse, HttpStatus.OK);
     }
