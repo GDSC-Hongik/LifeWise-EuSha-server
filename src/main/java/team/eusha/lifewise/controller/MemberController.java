@@ -1,5 +1,6 @@
 package team.eusha.lifewise.controller;
 
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -8,13 +9,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import team.eusha.lifewise.domain.Member;
+import team.eusha.lifewise.domain.RefreshToken;
 import team.eusha.lifewise.domain.Role;
 import team.eusha.lifewise.dto.request.MemberLoginRequest;
 import team.eusha.lifewise.dto.request.MemberSignupRequest;
+import team.eusha.lifewise.dto.request.RefreshTokenRequest;
 import team.eusha.lifewise.dto.response.MemberLoginResponse;
 import team.eusha.lifewise.dto.response.MemberSignupResponse;
 import team.eusha.lifewise.security.jwt.util.JwtTokenizer;
 import team.eusha.lifewise.service.MemberService;
+import team.eusha.lifewise.service.RefreshTokenService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +31,7 @@ public class MemberController {
     private final JwtTokenizer jwtTokenizer;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/signup")
     public ResponseEntity signup(@RequestBody @Valid MemberSignupRequest request, BindingResult bindingResult) {
@@ -80,5 +85,28 @@ public class MemberController {
     public ResponseEntity logout(@RequestHeader("Authorization") String token) {
 
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+    @PostMapping("/refreshToken")
+    public ResponseEntity requestRefresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        RefreshToken refreshToken = refreshTokenService.findRefreshToken(refreshTokenRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("Refresh token 값을 찾을 수 없습니다"));
+        Claims claims = jwtTokenizer.parseRefreshToken(refreshToken.getValue());
+
+        Long memberId = Long.valueOf((Integer)claims.get("memberId"));
+
+        Member member = memberService.getMember(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다"));
+
+
+        List roles = (List) claims.get("roles");
+        String email = claims.getSubject();
+
+        String accessToken = jwtTokenizer.createAccessToken(memberId, email, member.getMemberName(), roles);
+
+        MemberLoginResponse loginResponse = MemberLoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .memberId(member.getMemberId())
+                .memberName(member.getMemberName())
+                .build();
+        return new ResponseEntity(loginResponse, HttpStatus.OK);
     }
 }
