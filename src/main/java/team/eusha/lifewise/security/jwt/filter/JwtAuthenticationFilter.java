@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -38,15 +39,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String token="";
+        String token = "";
         try {
             token = getToken(request);
+            log.info("추출된 토큰 값:[{}]", token);
+            log.info("Token length: {}", (token != null ? token.length() : "null"));
+            log.info("StringUtils.hasText result: {}", StringUtils.hasText(token));
             if (StringUtils.hasText(token)) {
+                log.info("토큰 유효성 통과, 인증을 위한 과정 진행중");
                 getAuthentication(token);
+            } else {
+                log.info("토큰 유효성 실패");
             }
             filterChain.doFilter(request, response);
-        }
-        catch (NullPointerException | IllegalStateException e) {
+        } catch (NullPointerException | IllegalStateException e) {
             request.setAttribute("exception", JwtExceptionCode.NOT_FOUND_TOKEN.getCode());
             log.error("Not found Token // token : {}", token);
             log.error("Set Request Exception Code : {}", request.getAttribute("exception"));
@@ -81,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getToken(HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
-        if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer")){
+        if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer")) {
             String[] arr = authorization.split(" ");
             return arr[1];
         }
@@ -90,9 +96,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void getAuthentication(String token) {
         JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(token);
-        authenticationManager.authenticate(authenticationToken);
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
         SecurityContextHolder.getContext()
-                .setAuthentication(authenticationToken);
+                .setAuthentication(authentication);
     }
 
 

@@ -72,6 +72,11 @@ public class MemberController {
         String accessToken = jwtTokenizer.createAccessToken(member.getMemberId(),member.getEmail(),member.getMemberName(), roles);
         String refreshToken = jwtTokenizer.createRefreshToken(member.getMemberId(),member.getEmail(),member.getMemberName(), roles);
 
+        RefreshToken refreshTokenEntity = new RefreshToken();
+        refreshTokenEntity.setValue(refreshToken);
+        refreshTokenEntity.setMemberId(member.getMemberId());
+        refreshTokenService.addRefreshToken(refreshTokenEntity);
+
         MemberLoginResponse loginResponse = MemberLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -82,9 +87,9 @@ public class MemberController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity logout(@RequestHeader("Authorization") String token) {
-
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    public ResponseEntity logout(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+        return new ResponseEntity(HttpStatus.OK);
     }
     @PostMapping("/refreshToken")
     public ResponseEntity requestRefresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
