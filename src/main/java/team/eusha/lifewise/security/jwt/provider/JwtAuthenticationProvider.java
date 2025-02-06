@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import team.eusha.lifewise.security.jwt.token.JwtAuthenticationToken;
 import team.eusha.lifewise.security.jwt.util.JwtTokenizer;
+import team.eusha.lifewise.security.jwt.util.LoginInfoDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,13 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         JwtAuthenticationToken authenticationToken = (JwtAuthenticationToken) authentication;
         Claims claims = jwtTokenizer.parseAccessToken(authenticationToken.getToken());
+
         String email = claims.getSubject();
+
+        LoginInfoDto loginInfoDto = new LoginInfoDto();
+        loginInfoDto.setMemberId(Long.valueOf((Integer) claims.get("memberId")));
+        loginInfoDto.setEmail(claims.getSubject());
+        loginInfoDto.setMemberName((String) claims.get("memberName"));
         List<GrantedAuthority> authorities = getGrantedAuthorities(claims);
 
         return new JwtAuthenticationToken(authorities, email, null);
