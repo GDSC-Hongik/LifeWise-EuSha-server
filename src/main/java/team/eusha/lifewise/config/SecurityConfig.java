@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(httpRequest -> httpRequest
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                         .requestMatchers("/members/signup", "/members/login", "/members/refreshToken").permitAll()
+                        .requestMatchers("/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().hasAnyRole("USER", "ADMIN")
