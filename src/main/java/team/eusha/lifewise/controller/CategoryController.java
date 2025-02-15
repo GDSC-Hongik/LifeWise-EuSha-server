@@ -27,21 +27,21 @@ public class CategoryController {
 
     @GetMapping("/{categoryId}/subcategories")
     public ResponseEntity<SubCategoryListResponse> getSubCategories(
-            @PathVariable Long categoryId) {
+            @PathVariable("categoryId") Long categoryId) {
         return ResponseEntity.ok(categoryService.getSubCategories(categoryId));
     }
 
     @GetMapping("/{categoryId}/subcategories/all")
     public ResponseEntity<List<? extends DetailResponse>> getAllCategoryDetails(
-            @PathVariable Long categoryId
+            @PathVariable("categoryId") Long categoryId
     ) {
         return ResponseEntity.ok(categoryService.getAllDetails(categoryId));
     }
 
     @GetMapping("/{categoryId}/subcategories/{subCategoryId}")
     public ResponseEntity<List<? extends DetailResponse>> getSubCategoryDetails(
-            @PathVariable Long categoryId,
-            @PathVariable Long subCategoryId
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("subCategoryId") Long subCategoryId
     ) {
         return ResponseEntity.ok(categoryService.getSubCategoryDetails(categoryId, subCategoryId));
     }

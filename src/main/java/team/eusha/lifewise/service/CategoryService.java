@@ -92,6 +92,7 @@ public class CategoryService {
         return LaundryDetailResponse.builder()
                 .id(laundryDetail.getId())
                 .imageUrl(laundryDetail.getImageUrl())
+                .title(laundryDetail.getTitle())
                 .description(laundryDetail.getDescription())
                 .build();
     }

@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 public class LaundryDetailResponse extends DetailResponse{
     @Builder
-    public LaundryDetailResponse(Long id, String title, String imageUrl, String description) {
-        super(id, title, imageUrl, description);
+    public LaundryDetailResponse(Long id, String imageUrl, String title, String description) {
+        super(id, imageUrl, title, description);
     }
 
 }
