@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return matched;
                 });
 
-        return shouldNotFilter || Arrays.asList("/members/signup", "/members/login", "/members/refreshToken").contains(path);
+        return shouldNotFilter || Arrays.asList("/", "/members/signup", "/members/login", "/members/refreshToken").contains(path);
     }
 
     @Override
