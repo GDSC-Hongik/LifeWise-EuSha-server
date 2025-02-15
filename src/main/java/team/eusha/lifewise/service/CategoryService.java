@@ -14,6 +14,7 @@ import team.eusha.lifewise.repository.LaundryDetailRepository;
 import team.eusha.lifewise.repository.MainCategoryRepository;
 import team.eusha.lifewise.repository.SubCategoryRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,11 +90,13 @@ public class CategoryService {
 
 
     private LaundryDetailResponse convertToLaundryDetailResponse(LaundryDetail laundryDetail) {
+        List<String> descriptions = Arrays.asList(laundryDetail.getDescription().split("\n"));
+
         return LaundryDetailResponse.builder()
                 .id(laundryDetail.getId())
                 .imageUrl(laundryDetail.getImageUrl())
                 .title(laundryDetail.getTitle())
-                .description(laundryDetail.getDescription())
+                .description(descriptions)
                 .build();
     }
 
