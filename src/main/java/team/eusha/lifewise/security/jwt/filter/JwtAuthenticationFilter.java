@@ -32,11 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         AntPathMatcher pathMatcher = new AntPathMatcher();
+
         String[] categoryPatterns = {
                 "/categories",
-                "/categories/*/subCategories",
-                "/categories/*/subCategories/all",
-                "/categories/*/subCategories/*"
+                "/categories/*/subcategories",
+                "/categories/*/subcategories/all",
+                "/categories/*/subcategories/*"
         };
 
         boolean shouldNotFilter = Arrays.stream(categoryPatterns)
