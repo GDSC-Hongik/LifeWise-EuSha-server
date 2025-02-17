@@ -89,9 +89,13 @@ public class MemberController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity logout(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
-        return new ResponseEntity(HttpStatus.OK);
+    public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        try {
+            refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PostMapping("/refreshToken")
     public ResponseEntity requestRefresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
