@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import team.eusha.lifewise.security.jwt.exception.JwtExceptionCode;
@@ -29,10 +30,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String[] excludePath = {"/members/signup", "/members/login", "/members/refreshToken"};
         String path = request.getRequestURI();
-        return Arrays.stream(excludePath)
-                .anyMatch(path::equals);
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+
+        String[] categoryPatterns = {
+                "/categories",
+                "/categories/*/subcategories",
+                "/categories/*/subcategories/all",
+                "/categories/*/subcategories/*"
+        };
+
+        boolean shouldNotFilter = Arrays.stream(categoryPatterns)
+                .anyMatch(pattern -> {
+                    boolean matched = pathMatcher.match(pattern, path);
+                    return matched;
+                });
+
+        return shouldNotFilter || Arrays.asList("/", "/members/signup", "/members/login", "/members/refreshToken").contains(path);
     }
 
     @Override
