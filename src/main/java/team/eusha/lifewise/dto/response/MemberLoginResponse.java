@@ -15,4 +15,5 @@ public class MemberLoginResponse {
 
     private Long memberId;
     private String memberName;
+    private String email;
 }
