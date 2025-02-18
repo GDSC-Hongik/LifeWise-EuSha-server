@@ -16,9 +16,7 @@ import team.eusha.lifewise.dto.request.MemberSignupRequest;
 import team.eusha.lifewise.dto.request.RefreshTokenRequest;
 import team.eusha.lifewise.dto.response.MemberLoginResponse;
 import team.eusha.lifewise.dto.response.MemberSignupResponse;
-import team.eusha.lifewise.security.jwt.util.IfLogin;
 import team.eusha.lifewise.security.jwt.util.JwtTokenizer;
-import team.eusha.lifewise.security.jwt.util.LoginMemberDto;
 import team.eusha.lifewise.service.MemberService;
 import team.eusha.lifewise.service.RefreshTokenService;
 
@@ -129,11 +127,5 @@ public class MemberController {
                 .email(member.getEmail())
                 .build();
         return new ResponseEntity(loginResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/mypage")
-    public ResponseEntity getMyPage(@IfLogin LoginMemberDto loginMemberDto) {
-        Member member = memberService.findByEmail(loginMemberDto.getEmail());
-        return new ResponseEntity(member, HttpStatus.OK);
     }
 }

@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/members/logout").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/**").hasAnyRole("USER", "ADMIN")
                 )
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer -> httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .with(authenticationManagerConfig, customizer -> {})
