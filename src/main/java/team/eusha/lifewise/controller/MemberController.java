@@ -42,11 +42,11 @@ public class MemberController {
             return new ResponseEntity<>(Collections.singletonMap("message", "입력값이 올바르지 않습니다."),
                     HttpStatus.BAD_REQUEST);
         }
-        Member member = new Member();
-        member.setMemberName(request.getMemberName());
-        member.setEmail(request.getEmail());
-        member.setPassword(passwordEncoder.encode(request.getPassword()));
         try {
+            Member member = new Member();
+            member.setMemberName(request.getMemberName());
+            member.setEmail(request.getEmail());
+            member.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Member saveMember = memberService.addMember(member);
 
