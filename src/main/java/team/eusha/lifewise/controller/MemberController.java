@@ -22,6 +22,7 @@ import team.eusha.lifewise.security.jwt.util.LoginMemberDto;
 import team.eusha.lifewise.service.MemberService;
 import team.eusha.lifewise.service.RefreshTokenService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,14 +37,16 @@ public class MemberController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody @Valid MemberSignupRequest request, BindingResult bindingResult) {
+    public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.singletonMap("message", "입력값이 올바르지 않습니다."),
+                    HttpStatus.BAD_REQUEST);
         }
         Member member = new Member();
         member.setMemberName(request.getMemberName());
         member.setEmail(request.getEmail());
         member.setPassword(passwordEncoder.encode(request.getPassword()));
+        try {
 
         Member saveMember = memberService.addMember(member);
 
@@ -53,7 +56,11 @@ public class MemberController {
         response.setCreatedAt(saveMember.getCreatedAt());
         response.setEmail(saveMember.getEmail());
 
-        return new ResponseEntity(response, HttpStatus.CREATED);
+            return new ResponseEntity(response, HttpStatus.CREATED);
+        } catch (IllegalAccessError e) {
+            return new ResponseEntity<>(Collections.singletonMap("message", e.getMessage()),
+                    HttpStatus.CONFLICT);
+        }
     }
 
     @PostMapping("/login")
@@ -97,6 +104,7 @@ public class MemberController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PostMapping("/refreshToken")
     public ResponseEntity requestRefresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
         RefreshToken refreshToken = refreshTokenService.findRefreshToken(refreshTokenRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("Refresh token 값을 찾을 수 없습니다"));
