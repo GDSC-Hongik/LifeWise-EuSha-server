@@ -4,33 +4,51 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.eusha.lifewise.domain.Member;
+import team.eusha.lifewise.domain.Role;
 import team.eusha.lifewise.repository.MemberRepository;
+import team.eusha.lifewise.repository.RoleRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true) // 읽기 작업에는 readOnly = true 설정
-@RequiredArgsConstructor // final 필드에 대한 생성자 자동 생성
+@RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final RoleRepository roleRepository;
 
-    //전체 회원 조회
-    public List<Member> findMembers() {
-        return memberRepository.findAll();
+    @Transactional(readOnly = true)
+    public Member findByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
     }
 
-    //특정 회원 조회
-    public Member findOne(Long memberId) {
-        Optional<Member> member = memberRepository.findById(memberId);
-        return member.orElse(null);
+    @Transactional
+    public Member addMember(Member member) {
+
+        if (memberRepository.findByEmail(member.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        if (memberRepository.findByMemberName(member.getMemberName()).isPresent()) {
+            throw new IllegalArgumentException("이미 사용중인 사용자 이름입니다.");
+        }
+
+        Optional<Role> userRole = roleRepository.findByName("ROLE_USER");
+        member.addRole(userRole.get());
+        Member saveMember = memberRepository.save(member);
+        return saveMember;
     }
 
-    //회원 삭제
-    @Transactional // 쓰기 작업에는 @Transactional 필요 (readOnly = false 가 default)
-    public void deleteMember(Long memberId) {
-        memberRepository.deleteById(memberId);
+
+    @Transactional(readOnly = true)
+    public Optional<Member> getMember(Long memberId) {
+        return memberRepository.findById(memberId);
     }
+
+    @Transactional(readOnly = true)
+    public Optional<Member> getMember(String email) {
+        return memberRepository.findByEmail(email);
+    }
+
 
 }

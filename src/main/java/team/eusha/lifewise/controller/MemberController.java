@@ -1,43 +1,131 @@
 package team.eusha.lifewise.controller;
 
+import io.jsonwebtoken.Claims;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import team.eusha.lifewise.domain.Member;
+import team.eusha.lifewise.domain.RefreshToken;
+import team.eusha.lifewise.domain.Role;
+import team.eusha.lifewise.dto.request.MemberLoginRequest;
+import team.eusha.lifewise.dto.request.MemberSignupRequest;
+import team.eusha.lifewise.dto.request.RefreshTokenRequest;
+import team.eusha.lifewise.dto.response.MemberLoginResponse;
+import team.eusha.lifewise.dto.response.MemberSignupResponse;
+import team.eusha.lifewise.security.jwt.util.JwtTokenizer;
 import team.eusha.lifewise.service.MemberService;
+import team.eusha.lifewise.service.RefreshTokenService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/members")
 @RequiredArgsConstructor
+@RequestMapping("/members")
 public class MemberController {
 
+    private final JwtTokenizer jwtTokenizer;
     private final MemberService memberService;
+    private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
-    //전제 회원 조회
-    @GetMapping
-    public ResponseEntity<List<Member>> list() {
-        List<Member> members = memberService.findMembers();
-        return new ResponseEntity<>(members, HttpStatus.OK);
-    }
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest request, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(Collections.singletonMap("message", "입력값이 올바르지 않습니다."),
+                    HttpStatus.BAD_REQUEST);
+        }
+        try {
+            Member member = new Member();
+            member.setMemberName(request.getMemberName());
+            member.setEmail(request.getEmail());
+            member.setPassword(passwordEncoder.encode(request.getPassword()));
 
-    //특정 회원 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<Member> detail(@PathVariable("id") Long memberId) {
-        Member member = memberService.findOne(memberId);
-        if (member != null) {
-            return new ResponseEntity<>(member, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 회원이 없을 경우 404 Not Found 반환
+            Member saveMember = memberService.addMember(member);
+
+            MemberSignupResponse response = new MemberSignupResponse();
+            response.setMemberId(saveMember.getMemberId());
+            response.setMemberName(saveMember.getMemberName());
+            response.setCreatedAt(saveMember.getCreatedAt());
+            response.setEmail(saveMember.getEmail());
+
+            return new ResponseEntity(response, HttpStatus.CREATED);
+        } catch (IllegalAccessError e) {
+            return new ResponseEntity<>(Collections.singletonMap("message", e.getMessage()),
+                    HttpStatus.CONFLICT);
         }
     }
 
-    //회원 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable("id") Long memberId) {
-        memberService.deleteMember(memberId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 성공적으로 삭제되었을 경우 204 No Content 반환
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid MemberLoginRequest login, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+
+        Member member = memberService.findByEmail(login.getEmail());
+        if (!passwordEncoder.matches(login.getPassword(), member.getPassword())) {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+
+        List<String> roles = member.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+
+        // JWT 토큰 생성
+        String accessToken = jwtTokenizer.createAccessToken(member.getMemberId(), member.getEmail(), member.getMemberName(), roles);
+        String refreshToken = jwtTokenizer.createRefreshToken(member.getMemberId(), member.getEmail(), member.getMemberName(), roles);
+
+        RefreshToken refreshTokenEntity = new RefreshToken();
+        refreshTokenEntity.setValue(refreshToken);
+        refreshTokenEntity.setMemberId(member.getMemberId());
+        refreshTokenService.addRefreshToken(refreshTokenEntity);
+
+        MemberLoginResponse loginResponse = MemberLoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .memberId(member.getMemberId())
+                .memberName(member.getMemberName())
+                .email(member.getEmail())
+                .build();
+        return new ResponseEntity(loginResponse, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        try {
+            refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity requestRefresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        RefreshToken refreshToken = refreshTokenService.findRefreshToken(refreshTokenRequest.getRefreshToken()).orElseThrow(() -> new IllegalArgumentException("Refresh token 값을 찾을 수 없습니다"));
+        Claims claims = jwtTokenizer.parseRefreshToken(refreshToken.getValue());
+
+        Long memberId = Long.valueOf((Integer) claims.get("memberId"));
+
+        Member member = memberService.getMember(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다"));
+
+
+        List roles = (List) claims.get("roles");
+        String email = claims.getSubject();
+
+        String accessToken = jwtTokenizer.createAccessToken(memberId, email, member.getMemberName(), roles);
+
+        MemberLoginResponse loginResponse = MemberLoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .memberId(member.getMemberId())
+                .memberName(member.getMemberName())
+                .email(member.getEmail())
+                .build();
+        return new ResponseEntity(loginResponse, HttpStatus.OK);
     }
 }
