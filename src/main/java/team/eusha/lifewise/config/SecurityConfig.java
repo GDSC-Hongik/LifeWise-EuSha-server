@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/members/signup", "/members/login", "/members/refreshToken").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/members/logout").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").hasAnyRole("USER", "ADMIN")
                 )

@@ -24,6 +24,15 @@ public class MemberService {
 
     @Transactional
     public Member addMember(Member member) {
+
+        if (memberRepository.findByEmail(member.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        if (memberRepository.findByMemberName(member.getMemberName()).isPresent()) {
+            throw new IllegalArgumentException("이미 사용중인 사용자 이름입니다.");
+        }
+
         Optional<Role> userRole = roleRepository.findByName("ROLE_USER");
         member.addRole(userRole.get());
         Member saveMember = memberRepository.save(member);
