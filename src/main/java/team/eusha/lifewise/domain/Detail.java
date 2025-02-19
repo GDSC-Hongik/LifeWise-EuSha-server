@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "detail_type",discriminatorType = DiscriminatorType.STRING)
 @Table(name = "detail")
 @Getter
 public abstract class Detail {
