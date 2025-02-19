@@ -1,13 +1,17 @@
 package team.eusha.lifewise.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.eusha.lifewise.domain.Member;
 import team.eusha.lifewise.domain.Role;
+import team.eusha.lifewise.dto.response.NameUpdateResponse;
+import team.eusha.lifewise.dto.response.PasswordUpdateResponse;
 import team.eusha.lifewise.repository.MemberRepository;
 import team.eusha.lifewise.repository.RoleRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -50,5 +54,33 @@ public class MemberService {
         return memberRepository.findByEmail(email);
     }
 
+    private final PasswordEncoder passwordEncoder;
 
+    //이름 변경
+    @Transactional
+    public NameUpdateResponse updateName(String email, String newName) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        member.updateName(newName);
+
+        return new NameUpdateResponse(
+                member.getMemberId(),
+                member.getMemberName(),
+                member.getEmail(),
+                LocalDateTime.now()
+        );
+    }
+
+    //비번 변경
+    @Transactional
+    public PasswordUpdateResponse updatePassword(String email, String newPassword) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 새 비밀번호 암호화 후 저장
+        member.updatePassword(passwordEncoder.encode(newPassword));
+
+        return new PasswordUpdateResponse("비밀번호 변경 성공", LocalDateTime.now());
+    }
 }

@@ -58,4 +58,12 @@ public class Member {
     public void addRole(Role role) {
         roles.add(role);
     }
+
+    public void updateName(String newName) {
+        this.memberName = newName;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

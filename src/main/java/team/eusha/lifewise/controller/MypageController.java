@@ -1,12 +1,16 @@
 package team.eusha.lifewise.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import team.eusha.lifewise.domain.Member;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import team.eusha.lifewise.dto.request.UpdateNameRequest;
 import team.eusha.lifewise.dto.request.UpdatePasswordRequest;
-import team.eusha.lifewise.dto.response.MypageResponse;
+import team.eusha.lifewise.dto.response.NameUpdateResponse;
+import team.eusha.lifewise.dto.response.PasswordUpdateResponse;
 import team.eusha.lifewise.security.jwt.util.IfLogin;
 import team.eusha.lifewise.security.jwt.util.LoginMemberDto;
 import team.eusha.lifewise.service.MemberService;
@@ -18,28 +22,26 @@ public class MypageController {
 
     private final MemberService memberService;
 
-    @GetMapping
-    public ResponseEntity<?> getMyPage(@IfLogin LoginMemberDto loginMemberDto) {
-
-        Member member = memberService.findByEmail(loginMemberDto.getEmail());
-        MypageResponse response = MypageResponse.from(member);
+    @PatchMapping("/name")
+    public ResponseEntity<NameUpdateResponse> updateMemberName(
+            @IfLogin LoginMemberDto loginMemberDto,
+            @Valid @RequestBody UpdateNameRequest request
+    ) {
+        NameUpdateResponse response = memberService.updateName(
+                loginMemberDto.getEmail(), request.getNewName()
+        );
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/name")
-    public ResponseEntity<Void> updateMemberName(
-            @IfLogin LoginMemberDto loginMemberDto,
-            @RequestBody UpdateNameRequest request
-    ) {
-        return ResponseEntity.ok().build();
-    }
-
     @PatchMapping("/password")
-    public ResponseEntity<Void> updatePassword(
+    public ResponseEntity<PasswordUpdateResponse> updatePassword(
             @IfLogin LoginMemberDto loginMemberDto,
-            @RequestBody UpdatePasswordRequest request
+            @Valid @RequestBody UpdatePasswordRequest request
     ) {
-        return ResponseEntity.ok().build();
+        PasswordUpdateResponse response = memberService.updatePassword(
+                loginMemberDto.getEmail(), request.getNewPassword()
+        );
+        return ResponseEntity.ok(response);
     }
 
 }
