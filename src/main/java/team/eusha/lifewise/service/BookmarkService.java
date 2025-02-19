@@ -1,9 +1,12 @@
 package team.eusha.lifewise.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team.eusha.lifewise.domain.*;
+import team.eusha.lifewise.domain.Bookmark;
+import team.eusha.lifewise.domain.Detail;
+import team.eusha.lifewise.domain.Member;
 import team.eusha.lifewise.dto.request.BookmarkRequest;
 import team.eusha.lifewise.dto.response.BookmarkCreateResponse;
 import team.eusha.lifewise.dto.response.BookmarkListResponse;
@@ -17,6 +20,7 @@ import java.util.List;
 @Transactional
 public class BookmarkService {
     private final MemberService memberService;
+    @Qualifier("detailRepository")
     private final DetailRepository<Detail> detailRepository;
     private final BookmarkRepository bookmarkRepository;
 
@@ -25,14 +29,6 @@ public class BookmarkService {
 
         Detail detail = detailRepository.findById(request.getDetailId())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 상세정보입니다."));
-
-        if (detail instanceof LaundryDetail) {
-            LaundryDetail laundryDetail = (LaundryDetail) detail;
-        } else if (detail instanceof RecipeDetail) {
-            RecipeDetail recipeDetail = (RecipeDetail) detail;
-        } else if (detail instanceof RecyclingDetail) {
-            RecyclingDetail recyclingDetail = (RecyclingDetail) detail;
-        }
 
         if (bookmarkRepository.existsByMemberAndDetail(member, detail)) {
             throw new RuntimeException("이미 북마크된 컨텐츠입니다.");
