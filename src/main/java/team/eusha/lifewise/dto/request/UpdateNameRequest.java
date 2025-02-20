@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateNameRequest {
     @NotEmpty(message = "새 이름을 입력하세요.")
-    @Pattern(regexp = "^[a-zA-Z가-힣\\s]{2,15}$",
-            message = "이름은 2~15자 사이의 공백 포함 영문자, 한글이어야 합니다.")
+    @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,15}$",
+            message = "이름은 2~15자의 영문자, 숫자, 한글만 허용됩니다.")
     private String newName;
 }
