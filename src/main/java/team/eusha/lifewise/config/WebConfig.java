@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:5173",
                         "https://life-wise-eu-sha-web.vercel.app"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedMethods("GET", "POST", "PATCH", "DELETE")
                 .allowCredentials(true);
     }
 
