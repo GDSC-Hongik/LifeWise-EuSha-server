@@ -29,13 +29,13 @@ public class LikeListResponse {
             private List<String> description;
         }
 
-        public static LikeListResponse.LikeResponse from(Like like) {
+        public static LikeResponse from(Like like) {
             String[] descriptions = like.getDetail().getDescription().split("\n");
             List<String> descriptionList = List.of(descriptions);
 
-            return LikeListResponse.LikeResponse.builder()
+            return LikeResponse.builder()
                     .likeId(like.getId())
-                    .detail(LikeListResponse.LikeResponse.DetailInfo.builder()
+                    .detail(DetailInfo.builder()
                             .id(like.getDetail().getId())
                             .imageUrl(like.getDetail().getImageUrl())
                             .title(like.getDetail().getTitle())
@@ -47,8 +47,8 @@ public class LikeListResponse {
     }
 
     public static LikeListResponse from(List<Like> likes) {
-        List<LikeListResponse.LikeResponse> responses = likes.stream()
-                .map(LikeListResponse.LikeResponse::from)
+        List<LikeResponse> responses = likes.stream()
+                .map(LikeResponse::from)
                 .collect(Collectors.toList());
 
         return LikeListResponse.builder()

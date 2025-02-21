@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import team.eusha.lifewise.dto.request.LikeRequest;
+import team.eusha.lifewise.dto.response.LikeCountResponse;
 import team.eusha.lifewise.dto.response.LikeCreateResponse;
 import team.eusha.lifewise.dto.response.LikeListResponse;
 import team.eusha.lifewise.security.jwt.util.IfLogin;
@@ -32,5 +33,11 @@ public class LikeController {
     public ResponseEntity<Void> deleteBookmark(@IfLogin LoginMemberDto loginMemberDto, @PathVariable("likeId") Long likeId) {
         likeService.deleteLike(loginMemberDto.getEmail(), likeId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/likes/{detailId}/count")
+    public ResponseEntity<LikeCountResponse> getLikeCount(@PathVariable("detailId") Long detailId){
+        LikeCountResponse response= likeService.getLikeCount(detailId);
+        return ResponseEntity.ok(response);
     }
 }
