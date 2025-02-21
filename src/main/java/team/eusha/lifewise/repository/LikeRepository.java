@@ -11,4 +11,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     List<Like> findByMember(Member member);
 
     boolean existsByMemberAndDetail(Member member, Detail detail);
+
+    long countByDetail(Detail detail);
 }
