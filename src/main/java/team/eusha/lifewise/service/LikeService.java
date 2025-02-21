@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.eusha.lifewise.domain.*;
 import team.eusha.lifewise.dto.request.LikeRequest;
+import team.eusha.lifewise.dto.response.LikeCountResponse;
 import team.eusha.lifewise.dto.response.LikeCreateResponse;
 import team.eusha.lifewise.dto.response.LikeListResponse;
 import team.eusha.lifewise.repository.DetailRepository;
@@ -66,4 +67,18 @@ public class LikeService {
 
         likeRepository.delete(like);
     }
+
+    @Transactional(readOnly = true)
+    public LikeCountResponse getLikeCount(Long detailId){
+        Detail detail=detailRepository.findById(detailId)
+                .orElseThrow(()-> new RuntimeException("존재하지 않는 상세정보입니다."));
+
+        long count = likeRepository.countByDetail(detail);
+
+        return LikeCountResponse.builder()
+                .detailId(detailId)
+                .likeCount(count)
+                .build();
+    }
+
 }
